@@ -19,7 +19,15 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const serviceCollection = client.db("fitnessMate").collection("services");
+    //    all services
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursor = serviceCollection.find(query);
+      const services = await cursor.toArray();
+      res.send(services);
+    });
   } finally {
+    //
   }
 }
 
