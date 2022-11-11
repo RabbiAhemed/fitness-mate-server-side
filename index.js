@@ -15,11 +15,15 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
+
+async function run() {
+  try {
+    const serviceCollection = client.db("fitnessMate").collection("services");
+  } finally {
+  }
+}
+
+run().catch((error) => console.log(error));
 
 /* api's */
 app.get("/", (req, res) => {
