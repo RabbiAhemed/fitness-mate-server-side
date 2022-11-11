@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 /* middle wares */
 app.use(cors());
@@ -19,7 +20,8 @@ async function run() {
   try {
     //   connect the client
     await client.connect();
-    const servicesCollection = client.db("Warehouse").collection("services");
+    const servicesCollection = client.db("fitnessMate").collection("services");
+    const reviewsCollection = client.db("fitnessMate").collection("reviews");
     console.log("connected to db");
 
     // get api for read all service
@@ -29,21 +31,40 @@ async function run() {
       const services = await cursor.toArray();
       res.send(services);
     });
+    // get a single service by id
+    app.get("/service/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const service = await servicesCollection.findOne(query);
+      res.send(service);
+    });
 
     //add  service
     app.post("/addService", async (req, res) => {
       const newservice = req.body;
       const result = await servicesCollection.insertOne(newservice);
+      newservice.service_id = result.insertedId;
       res.send(result);
+    });
+    //add  review
+    app.post("/addReview", async (req, res) => {
+      const newreview = req.body;
+      const result = await reviewsCollection.insertOne(newreview);
+      res.send(result);
+    });
+    // jwt
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const secretToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "2h",
+      });
+      res.send({ secretToken });
     });
   } finally {
   }
 }
 
 run().catch((error) => console.log(error));
-/* apis */
-
-//    get all services
 
 app.listen(port, () => {
   console.log("port number", port);
