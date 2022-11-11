@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.esmmy.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -18,25 +17,33 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const serviceCollection = client.db("fitnessMate").collection("services");
-    //    all services
+    //   connect the client
+    await client.connect();
+    const servicesCollection = client.db("Warehouse").collection("services");
+    console.log("connected to db");
+
+    // get api for read all service
     app.get("/services", async (req, res) => {
-      const query = {};
-      const cursor = serviceCollection.find(query);
+      const query = req.query;
+      const cursor = servicesCollection.find(query);
       const services = await cursor.toArray();
       res.send(services);
     });
+
+    //add  service
+    app.post("/addService", async (req, res) => {
+      const newservice = req.body;
+      const result = await servicesCollection.insertOne(newservice);
+      res.send(result);
+    });
   } finally {
-    //
   }
 }
 
 run().catch((error) => console.log(error));
+/* apis */
 
-/* api's */
-app.get("/", (req, res) => {
-  res.send("server running");
-});
+//    get all services
 
 app.listen(port, () => {
   console.log("port number", port);
