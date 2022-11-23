@@ -19,7 +19,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     //   connect the client
-    await client.connect();
+    // await client.connect();
     const servicesCollection = client.db("fitnessMate").collection("services");
     const reviewsCollection = client.db("fitnessMate").collection("reviews");
     console.log("connected to db");
@@ -32,7 +32,7 @@ async function run() {
       res.send(services);
     });
     // get a single service by id
-    app.get("/service/:id", async (req, res) => {
+    app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const service = await servicesCollection.findOne(query);
@@ -41,9 +41,9 @@ async function run() {
 
     //add  service
     app.post("/addService", async (req, res) => {
-      const newservice = req.body;
-      const result = await servicesCollection.insertOne(newservice);
-      newservice.service_id = result.insertedId;
+      const newService = req.body;
+      const result = await servicesCollection.insertOne(newService);
+      newService.service_id = result.insertedId;
       res.send(result);
     });
     //add  review
@@ -65,6 +65,9 @@ async function run() {
 }
 
 run().catch((error) => console.log(error));
+app.get("/", (req, res) => {
+  res.send("server running properly");
+});
 
 app.listen(port, () => {
   console.log("port number", port);
